@@ -1,5 +1,5 @@
 fn main() {
-    part1();
+    part2();
 }
 
 use regex::Regex;
@@ -42,12 +42,19 @@ fn part2()
 
     for cap in re.captures_iter(&input) {
         if &cap[0] == "don't()" {
-
+            add = false;
         }
-        let nums: Vec<i32> = numbers.captures_iter(&cap[0]).map(|c| c[0].parse().unwrap()).collect();
-        let num1 = nums[0];
-        let num2 = nums[1];
-        total += num1*num2;
+        else if &cap[0] == "do()" {
+            add = true;
+        }
+
+        else if add {
+            println!("{}", &cap[0]);
+            let nums: Vec<i32> = numbers.captures_iter(&cap[0]).map(|c| c[0].parse().unwrap()).collect();
+            let num1 = nums[0];
+            let num2 = nums[1];
+            total += num1*num2;
+        }
     }
 
     println!("{total}");

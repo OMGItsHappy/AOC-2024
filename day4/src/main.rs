@@ -1,5 +1,5 @@
 fn main() {
-    part1();
+    part2();
 }
 
 use std::collections::HashSet;
@@ -9,6 +9,35 @@ fn read_input() -> Vec<Vec<char>>{
     let contents = fs::read_to_string("input.txt").unwrap();
     let value: Vec<Vec<char>> = contents.lines().map(|line| line.chars().collect()).collect();
     return value;
+}
+
+fn part2() {
+    let input = read_input();
+    let len = input[0].len();
+    let mut total = 0;
+
+    for (row_index, row) in input.iter().enumerate() {
+        for (col_index, char) in row.iter().enumerate() {
+            if *char == 'A' && 
+                row_index > 0 && row_index < len - 1 &&
+                col_index > 0 && col_index < len - 1 {
+                let tl_tr_bl_br = vec![
+                    input[row_index - 1][col_index - 1],
+                    input[row_index - 1][col_index + 1],
+                    input[row_index + 1][col_index - 1],
+                    input[row_index + 1][col_index + 1]
+                ].iter().collect::<String>();
+                if tl_tr_bl_br.matches("S").count() == 2 &&
+                    tl_tr_bl_br.matches("M").count() == 2 &&
+                    tl_tr_bl_br.chars().nth(0) != tl_tr_bl_br.chars().nth(3) &&
+                    tl_tr_bl_br.chars().nth(1) != tl_tr_bl_br.chars().nth(2) {
+                        total += 1;
+                    }
+            }
+        }
+    }
+
+    println!("{}", total);
 }
 
 fn index_conversion(indexs: [i32; 2], len: usize) -> Result<[usize; 2], String> {

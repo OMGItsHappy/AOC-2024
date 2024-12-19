@@ -2,7 +2,7 @@ fn main() {
     part1();
 }
 
-use std::{cmp::max, collections::HashSet, fs};
+use std::{borrow::Borrow, cmp::max, collections::HashSet, fs};
 
 fn read_input() -> Vec<Vec<char>> {
     let contents = fs::read_to_string("input.txt").unwrap();
@@ -35,6 +35,8 @@ fn generate_cords(row_start: i32, row_end: i32, col_start: i32, col_end: i32) ->
             .collect());
     }
 }
+
+#[derive(Clone, Debug)]
 enum Direction {
     North,
     South,
@@ -45,8 +47,8 @@ enum Direction {
 impl Direction {
     fn value(&self) -> (i32, i32) {
         match *self {
-            Direction::North => (1, 0),
-            Direction::South => (-1, 0),
+            Direction::North => (-1, 0),
+            Direction::South => (1, 0),
             Direction::East => (0, 1),
             Direction::West => (0, -1),
         }
@@ -62,39 +64,59 @@ impl Direction {
     }
 }
 
+#[derive(Debug)]
+struct Point {
+    row: i32,
+    col: i32,
+    direction: Direction
+} 
+
+impl Point {
+    fn invalid (&self, height: i32, width: i32) -> bool {
+        self.row == -1 || 
+        self.row == height ||
+        self.col == -1 ||
+        self.col == width
+    }
+}
+
+fn move_in_direction(cords_direction: &Point) -> Point {
+    return Point {
+        row: cords_direction.row + cords_direction.direction.value().0,
+        col: cords_direction.col + cords_direction.direction.value().1,
+        direction: cords_direction.direction.clone()
+    };
+}
+
 fn part1() {
     let array = read_input();
 
-    let width = array[0].len().try_into().unwrap();
-    let height = array.len().try_into().unwrap();
+    let width: i32 = array[0].len().try_into().unwrap();
+    let height: i32 = array.len().try_into().unwrap();
 
-    let mut row_col_dir: (i32, i32, Direction) = (-1, -1, Direction::North);
-
-    let mut locations: Vec<Vec<i32>> = Vec::new();
+    let mut row_col_dir = Point { row: -1, col: -1, direction: Direction::North };
     for (row_i, row) in array.iter().enumerate() {
-        let mut tmp: Vec<i32> = Vec::new();
         for (col_i, col) in row.iter().enumerate() {
-            if col == &'#' {
-                tmp.push(col_i.try_into().unwrap());
-            } else if *col == '^' {
-                row_col_dir = (row_i.try_into().unwrap(), col_i.try_into().unwrap(), Direction::North);
+            if *col == '^' {
+                row_col_dir = Point { row: row_i.try_into().unwrap(), col: col_i.try_into().unwrap(), direction: Direction::North };
             }
         }
-        locations.push(tmp);
     }
 
-    fn add_dir()
-
     let mut locations_visited: HashSet<(i32, i32)> = HashSet::new();
-    while row_col_dir.0 != -1 && 
-        row_col_dir.0 != height &&
-        row_col_dir.1 != -1 &&
-        row_col_dir.1 != width {
-            locations_visited.insert((row_col_dir.0, row_col_dir.1));
-            row_col_dir.0 += row_col_dir.2.value().0;
-            row_col_dir.1 += row_col_dir.2.value().1;
-            
+    locations_visited.insert((row_col_dir.row, row_col_dir.col));
+    loop {
+        println!("{:?}", row_col_dir);
+        let next = move_in_direction(&row_col_dir);
+        if next.invalid(height, width) {
+            break;
+        } else if array[next.row as usize][next.col as usize] == '#' {
+            row_col_dir.direction.next();
+        } else {
+            locations_visited.insert((row_col_dir.row, row_col_dir.col));
+            row_col_dir = next;
         }
+    }
 
-    println!("{:?}", generate_cords(10, 0, 5, 14));
+    println!("{}", locations_visited.len() + 1);
 }
